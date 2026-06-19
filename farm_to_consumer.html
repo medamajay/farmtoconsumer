@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KisanMart – Farm to Your Table</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-900: #1a3a1f;
+    --green-700: #2d6a35;
+    --green-500: #4caf50;
+    --green-300: #81c784;
+    --green-100: #e8f5e9;
+    --amber-500: #ff9800;
+    --amber-300: #ffcc02;
+    --red-500: #f44336;
+    --bg: #fafdf7;
+    --surface: #ffffff;
+    --text: #1a2e1c;
+    --text-muted: #6a7c6d;
+    --border: #d4e8d6;
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1,h2,h3 { font-family: 'Playfair Display', serif; }
+
+  /* NAVBAR */
+  .navbar {
+    background: var(--green-900);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  }
+  .logo { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; cursor: pointer; }
+  .logo span { color: var(--amber-300); }
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .nav-btn { background: transparent; border: 1.5px solid rgba(255,255,255,0.3); color: #fff; padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .nav-btn:hover { background: rgba(255,255,255,0.1); }
+  .nav-btn.primary { background: var(--amber-500); border-color: var(--amber-500); color: #000; font-weight: 600; }
+  .nav-btn.primary:hover { background: var(--amber-300); }
+  .cart-btn { position: relative; background: none; border: none; color: #fff; cursor: pointer; font-size: 1.4rem; padding: 0.3rem; }
+  .cart-badge { position: absolute; top: -4px; right: -4px; background: var(--red-500); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .user-chip { background: var(--green-700); color: #fff; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 60%, var(--green-500) 100%);
+    padding: 5rem 2rem 4rem; text-align: center; color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.1; margin-bottom: 1rem; position: relative; }
+  .hero h1 span { color: var(--amber-300); }
+  .hero p { font-size: 1.2rem; opacity: 0.85; max-width: 560px; margin: 0 auto 2rem; position: relative; }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+  .hero-btn { padding: 0.85rem 2rem; border-radius: 12px; border: none; cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; }
+  .hero-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .hero-btn.primary { background: var(--amber-500); color: #000; }
+  .hero-btn.outline { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.6); }
+  .stats { display: flex; gap: 2rem; justify-content: center; margin-top: 3rem; flex-wrap: wrap; position: relative; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 2rem; font-weight: 900; font-family: 'Playfair Display', serif; color: var(--amber-300); }
+  .stat-label { font-size: 0.85rem; opacity: 0.7; }
+
+  /* LAYOUT */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+  .section { padding: 3rem 0; }
+  .section-title { font-size: 2rem; margin-bottom: 0.5rem; }
+  .section-sub { color: var(--text-muted); margin-bottom: 2rem; }
+
+  /* PRODUCT GRID */
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+  .product-card {
+    background: var(--surface); border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); transition: transform 0.25s, box-shadow 0.25s; cursor: pointer;
+    border: 1px solid var(--border);
+  }
+  .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+  .product-img { width: 100%; height: 180px; object-fit: cover; background: linear-gradient(135deg, var(--green-100), var(--green-300)); display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+  .product-body { padding: 1rem; }
+  .product-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+  .product-farmer { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+  .product-meta { display: flex; align-items: center; justify-content: space-between; }
+  .product-price { font-size: 1.2rem; font-weight: 700; color: var(--green-700); }
+  .product-stock { font-size: 0.75rem; color: var(--text-muted); }
+  .add-btn { background: var(--green-500); color: #fff; border: none; border-radius: 8px; padding: 0.45rem 1rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
+  .add-btn:hover { background: var(--green-700); }
+  .badge-organic { background: var(--green-100); color: var(--green-700); font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; margin-bottom: 0.5rem; }
+
+  /* FORMS */
+  .form-card {
+    background: var(--surface); border-radius: var(--radius); padding: 2.5rem; max-width: 480px;
+    margin: 3rem auto; box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .form-title { text-align: center; margin-bottom: 0.5rem; font-size: 2rem; }
+  .form-sub { text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; }
+  .form-group { margin-bottom: 1.2rem; }
+  label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  input, select, textarea {
+    width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 0.95rem; font-family: inherit; background: var(--bg); color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(76,175,80,0.12); }
+  .btn { width: 100%; padding: 0.85rem; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+  .btn-primary { background: var(--green-700); color: #fff; }
+  .btn-primary:hover { background: var(--green-900); transform: translateY(-1px); }
+  .btn-outline { background: transparent; border: 2px solid var(--green-700); color: var(--green-700); margin-top: 0.75rem; }
+  .btn-outline:hover { background: var(--green-100); }
+  .toggle-link { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted); }
+  .toggle-link span { color: var(--green-700); cursor: pointer; font-weight: 600; }
+  .toggle-link span:hover { text-decoration: underline; }
+  .role-select { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .role-opt { flex: 1; text-align: center; padding: 0.75rem; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+  .role-opt.active { border-color: var(--green-500); background: var(--green-100); color: var(--green-700); font-weight: 600; }
+  .role-opt:hover { border-color: var(--green-300); }
+  .role-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+  .alert { padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
+  .alert-error { background: #fce8e6; color: #c62828; border: 1px solid #ffcdd2; }
+  .alert-success { background: var(--green-100); color: var(--green-700); border: 1px solid var(--green-300); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 0; }
+  .tab { padding: 0.6rem 1.2rem; border: none; background: none; cursor: pointer; font-size: 0.95rem; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; font-family: inherit; font-weight: 500; transition: color 0.2s; }
+  .tab.active { color: var(--green-700); border-bottom-color: var(--green-700); font-weight: 600; }
+
+  /* DASHBOARD */
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
+  .dash-card { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid var(--border); }
+  .dash-card-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .dash-card-val { font-size: 2rem; font-weight: 900; font-family: 'Playfair Display', serif; color: var(--green-700); }
+  .dash-card-label { font-size: 0.85rem; color: var(--text-muted); }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .data-table th { text-align: left; padding: 0.75rem 1rem; background: var(--green-100); color: var(--green-700); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .data-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tr:hover td { background: var(--green-100); }
+  .table-wrap { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); overflow-x: auto; }
+  .status-badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+  .status-pending { background: #fff3e0; color: #e65100; }
+  .status-delivered { background: var(--green-100); color: var(--green-700); }
+  .status-processing { background: #e3f2fd; color: #1565c0; }
+  .status-verified { background: var(--green-100); color: var(--green-700); }
+  .status-unverified { background: #fce4ec; color: #880e4f; }
+
+  /* CART SIDEBAR */
+  .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .cart-overlay.open { opacity: 1; pointer-events: all; }
+  .cart-sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: min(400px, 100vw); background: var(--surface); z-index: 201; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow: -8px 0 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+  .cart-sidebar.open { transform: translateX(0); }
+  .cart-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .cart-items { flex: 1; overflow-y: auto; padding: 1rem; }
+  .cart-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); align-items: center; }
+  .cart-item-emoji { font-size: 2.5rem; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-weight: 600; font-size: 0.95rem; }
+  .cart-item-price { color: var(--green-700); font-weight: 600; }
+  .qty-ctrl { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; }
+  .qty-btn { background: var(--green-100); border: none; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 700; color: var(--green-700); }
+  .qty-val { font-weight: 600; min-width: 24px; text-align: center; }
+  .remove-btn { background: none; border: none; cursor: pointer; color: var(--red-500); font-size: 1.2rem; padding: 0.2rem; }
+  .cart-footer { padding: 1.5rem; border-top: 1px solid var(--border); }
+  .cart-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+  .checkout-btn { width: 100%; padding: 1rem; background: var(--green-700); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+  .checkout-btn:hover { background: var(--green-900); }
+
+  /* SEARCH BAR */
+  .search-bar { display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
+  .search-input { flex: 1; min-width: 200px; padding: 0.75rem 1rem; border: 2px solid var(--border); border-radius: 12px; font-size: 0.95rem; font-family: inherit; background: var(--surface); outline: none; }
+  .search-input:focus { border-color: var(--green-500); }
+  .filter-select { padding: 0.75rem 1rem; border: 2px solid var(--border); border-radius: 12px; font-size: 0.9rem; background: var(--surface); cursor: pointer; outline: none; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .modal { background: var(--surface); border-radius: var(--radius); padding: 2rem; max-width: 520px; width: 100%; box-shadow: 0 24px 80px rgba(0,0,0,0.2); }
+  .modal-title { font-size: 1.5rem; margin-bottom: 1.5rem; }
+  .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+  .btn-danger { background: var(--red-500); color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; }
+  .btn-secondary { background: var(--border); color: var(--text); border: none; padding: 0.75rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: 600; }
+  .btn-sm { padding: 0.4rem 0.8rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+  .btn-sm-primary { background: var(--green-500); color: #fff; }
+  .btn-sm-danger { background: var(--red-500); color: #fff; }
+  .btn-sm-warning { background: var(--amber-500); color: #000; }
+
+  /* ORDER TRACKING */
+  .tracking-steps { display: flex; gap: 0; margin: 2rem 0; }
+  .track-step { flex: 1; text-align: center; position: relative; }
+  .track-step::before { content: ''; position: absolute; top: 20px; left: 50%; right: -50%; height: 2px; background: var(--border); z-index: 0; }
+  .track-step:last-child::before { display: none; }
+  .track-dot { width: 40px; height: 40px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1rem; position: relative; z-index: 1; transition: background 0.3s; }
+  .track-dot.done { background: var(--green-500); }
+  .track-dot.active { background: var(--amber-500); box-shadow: 0 0 0 4px rgba(255,152,0,0.25); }
+  .track-label { font-size: 0.75rem; color: var(--text-muted); }
+  .track-label.done { color: var(--green-700); font-weight: 600; }
+
+  /* NOTIFICATION */
+  .notification { position: fixed; top: 80px; right: 1.5rem; background: var(--green-700); color: #fff; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 500; font-weight: 500; animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; }
+  @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; pointer-events: none; } }
+
+  /* MISC */
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+  .empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
+  .chip { display: inline-block; padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: var(--green-100); color: var(--green-700); }
+  .page-header { background: var(--green-900); color: #fff; padding: 2.5rem 2rem; }
+  .page-header h1 { font-size: 2rem; }
+  .page-header p { opacity: 0.7; margin-top: 0.3rem; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .action-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .green-text { color: var(--green-700); }
+  .tag { display: inline-block; background: var(--green-100); color: var(--green-700); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
+  textarea { resize: vertical; min-height: 80px; }
+  .profile-chip { display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 0.3rem 0.8rem; color: #fff; font-size: 0.85rem; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-500); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+
+  @media (max-width: 600px) {
+    .navbar { padding: 0 1rem; }
+    .hero { padding: 3rem 1rem 2.5rem; }
+    .form-card { margin: 1.5rem 1rem; padding: 1.5rem; }
+    .tracking-steps { flex-direction: column; gap: 1rem; }
+    .track-step::before { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ─── INITIAL DATA ───────────────────────────────────────────────────────────
+const INITIAL_PRODUCTS = [
+  { id: 1, name: "Fresh Tomatoes", emoji: "🍅", price: 35, unit: "kg", stock: 50, category: "Vegetables", farmerId: 2, farmerName: "Ramu Patel", organic: true, description: "Sun-ripened, juicy tomatoes from our organic farm." },
+  { id: 2, name: "Spinach", emoji: "🥬", price: 25, unit: "bunch", stock: 30, category: "Leafy Greens", farmerId: 2, farmerName: "Ramu Patel", organic: true, description: "Fresh green spinach leaves, harvested daily." },
+  { id: 3, name: "Potatoes", emoji: "🥔", price: 20, unit: "kg", stock: 100, category: "Vegetables", farmerId: 3, farmerName: "Sunita Devi", organic: false, description: "Farm-fresh potatoes, perfect for all dishes." },
+  { id: 4, name: "Onions", emoji: "🧅", price: 40, unit: "kg", stock: 80, category: "Vegetables", farmerId: 3, farmerName: "Sunita Devi", organic: false, description: "Premium quality onions with strong flavour." },
+  { id: 5, name: "Carrots", emoji: "🥕", price: 30, unit: "kg", stock: 40, category: "Vegetables", farmerId: 2, farmerName: "Ramu Patel", organic: true, description: "Sweet, crunchy organic carrots." },
+  { id: 6, name: "Cauliflower", emoji: "🥦", price: 45, unit: "piece", stock: 25, category: "Vegetables", farmerId: 4, farmerName: "Vikram Singh", organic: false, description: "Large, fresh cauliflower heads." },
+  { id: 7, name: "Mangoes", emoji: "🥭", price: 120, unit: "kg", stock: 20, category: "Fruits", farmerId: 4, farmerName: "Vikram Singh", organic: true, description: "Alphonso mangoes, fresh from the orchard." },
+  { id: 8, name: "Brinjal", emoji: "🍆", price: 28, unit: "kg", stock: 35, category: "Vegetables", farmerId: 3, farmerName: "Sunita Devi", organic: false, description: "Glossy purple brinjals, farm harvested." },
+];
+
+const INITIAL_USERS = [
+  { id: 1, name: "Admin Kumar", email: "admin@kisanmart.com", password: "admin123", role: "admin", verified: true, joinDate: "2024-01-01" },
+  { id: 2, name: "Ramu Patel", email: "ramu@farm.com", password: "farmer123", role: "farmer", verified: true, location: "Pune, Maharashtra", joinDate: "2024-02-15" },
+  { id: 3, name: "Sunita Devi", email: "sunita@farm.com", password: "farmer123", role: "farmer", verified: true, location: "Nashik, Maharashtra", joinDate: "2024-03-10" },
+  { id: 4, name: "Vikram Singh", email: "vikram@farm.com", password: "farmer123", role: "farmer", verified: false, location: "Hyderabad, Telangana", joinDate: "2024-06-01" },
+  { id: 5, name: "Priya Consumer", email: "priya@gmail.com", password: "consumer123", role: "consumer", verified: true, joinDate: "2024-04-20" },
+];
+
+const INITIAL_ORDERS = [
+  { id: "ORD001", consumerId: 5, consumerName: "Priya Consumer", items: [{ productId: 1, name: "Fresh Tomatoes", emoji: "🍅", qty: 2, price: 35 }], total: 70, status: "Delivered", date: "2024-06-01", farmerId: 2 },
+  { id: "ORD002", consumerId: 5, consumerName: "Priya Consumer", items: [{ productId: 7, name: "Mangoes", emoji: "🥭", qty: 1, price: 120 }], total: 120, status: "Processing", date: "2024-06-10", farmerId: 4 },
+];
+
+const CATEGORIES = ["All", "Vegetables", "Fruits", "Leafy Greens"];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function genId(arr) { return arr.length ? Math.max(...arr.map(x => x.id)) + 1 : 1; }
+function genOrderId(orders) { return "ORD" + String(orders.length + 1).padStart(3, "0"); }
+
+// ─── APP ─────────────────────────────────────────────────────────────────────
+function App() {
+  const [users, setUsers] = useState(INITIAL_USERS);
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [page, setPage] = useState("home");
+  const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [notifKey, setNotifKey] = useState(0);
+
+  const notify = (msg) => { setNotification(msg); setNotifKey(k => k + 1); setTimeout(() => setNotification(null), 3000); };
+
+  const login = (user) => { setCurrentUser(user); setPage(user.role === "admin" ? "admin" : user.role === "farmer" ? "farmer" : "shop"); };
+  const logout = () => { setCurrentUser(null); setPage("home"); setCart([]); };
+
+  const addToCart = (product) => {
+    setCart(c => {
+      const ex = c.find(i => i.id === product.id);
+      if (ex) return c.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+      return [...c, { ...product, qty: 1 }];
+    });
+    notify(`🛒 ${product.name} added to cart!`);
+  };
+
+  const updateQty = (id, delta) => setCart(c => c.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
+  const removeItem = (id) => setCart(c => c.filter(i => i.id !== id));
+  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  const placeOrder = () => {
+    if (!currentUser) { setPage("auth"); setCartOpen(false); return; }
+    if (cart.length === 0) return;
+    const order = {
+      id: genOrderId(orders), consumerId: currentUser.id, consumerName: currentUser.name,
+      items: cart.map(i => ({ productId: i.id, name: i.name, emoji: i.emoji, qty: i.qty, price: i.price })),
+      total: cartTotal, status: "Processing", date: new Date().toISOString().slice(0, 10), farmerId: cart[0].farmerId
+    };
+    setOrders(o => [...o, order]);
+    setProducts(p => p.map(pr => { const ci = cart.find(c => c.id === pr.id); return ci ? { ...pr, stock: pr.stock - ci.qty } : pr; }));
+    setCart([]);
+    setCartOpen(false);
+    notify("✅ Order placed successfully!");
+    setPage("orders");
+  };
+
+  return (
+    <div>
+      <Navbar currentUser={currentUser} setPage={setPage} cartCount={cartCount} setCartOpen={setCartOpen} logout={logout} />
+      <CartSidebar open={cartOpen} setOpen={setCartOpen} cart={cart} updateQty={updateQty} removeItem={removeItem} cartTotal={cartTotal} placeOrder={placeOrder} />
+      {notification && <div key={notifKey} className="notification">{notification}</div>}
+      {page === "home" && <HomePage setPage={setPage} currentUser={currentUser} products={products} addToCart={addToCart} />}
+      {page === "auth" && <AuthPage users={users} setUsers={setUsers} login={login} setPage={setPage} />}
+      {page === "shop" && <ShopPage products={products} addToCart={addToCart} currentUser={currentUser} setPage={setPage} />}
+      {page === "orders" && <OrdersPage orders={orders} currentUser={currentUser} setPage={setPage} setOrders={setOrders} />}
+      {page === "farmer" && <FarmerDashboard currentUser={currentUser} products={products} setProducts={setProducts} orders={orders} users={users} notify={notify} />}
+      {page === "admin" && <AdminDashboard users={users} setUsers={setUsers} products={products} setProducts={setProducts} orders={orders} setOrders={setOrders} notify={notify} />}
+      {page === "profile" && <ProfilePage currentUser={currentUser} logout={logout} setPage={setPage} orders={orders} />}
+    </div>
+  );
+}
+
+// ─── NAVBAR ──────────────────────────────────────────────────────────────────
+function Navbar({ currentUser, setPage, cartCount, setCartOpen, logout }) {
+  return (
+    <nav className="navbar">
+      <div className="logo" onClick={() => setPage("home")}>Kisan<span>Mart</span></div>
+      <div className="nav-right">
+        {currentUser ? (
+          <>
+            {currentUser.role === "consumer" && (
+              <>
+                <button className="nav-btn" onClick={() => setPage("shop")}>🛍 Shop</button>
+                <button className="nav-btn" onClick={() => setPage("orders")}>📦 Orders</button>
+                <button className="cart-btn" onClick={() => setCartOpen(true)}>
+                  🛒 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+                </button>
+              </>
+            )}
+            {currentUser.role === "farmer" && <button className="nav-btn" onClick={() => setPage("farmer")}>🌾 Dashboard</button>}
+            {currentUser.role === "admin" && <button className="nav-btn" onClick={() => setPage("admin")}>⚙️ Admin</button>}
+            <div className="profile-chip" style={{ cursor: "pointer" }} onClick={() => setPage("profile")}>
+              <div className="avatar">{currentUser.name[0]}</div>
+              <span>{currentUser.name.split(" ")[0]}</span>
+            </div>
+            <button className="nav-btn" onClick={logout}>Logout</button>
+          </>
+        ) : (
+          <>
+            <button className="nav-btn" onClick={() => setPage("shop")}>🛍 Shop</button>
+            <button className="nav-btn" onClick={() => setPage("auth")}>Sign In</button>
+            <button className="nav-btn primary" onClick={() => setPage("auth")}>Register</button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// ─── HOME PAGE ───────────────────────────────────────────────────────────────
+function HomePage({ setPage, currentUser, products, addToCart }) {
+  const featured = products.slice(0, 4);
+  return (
+    <div>
+      <div className="hero">
+        <h1>Fresh from the Farm,<br /><span>Straight to Your Table</span></h1>
+        <p>Buy directly from local farmers. No middlemen. Fair prices. Fresher produce.</p>
+        <div className="hero-btns">
+          <button className="hero-btn primary" onClick={() => setPage("shop")}>Shop Now</button>
+          {!currentUser && <button className="hero-btn outline" onClick={() => setPage("auth")}>Join as Farmer</button>}
+        </div>
+        <div className="stats">
+          <div className="stat"><div className="stat-num">200+</div><div className="stat-label">Verified Farmers</div></div>
+          <div className="stat"><div className="stat-num">500+</div><div className="stat-label">Products</div></div>
+          <div className="stat"><div className="stat-num">5000+</div><div className="stat-label">Happy Consumers</div></div>
+          <div className="stat"><div className="stat-num">0</div><div className="stat-label">Middlemen</div></div>
+        </div>
+      </div>
+      <div className="container section">
+        <div className="flex-between" style={{ marginBottom: "2rem" }}>
+          <div><h2 className="section-title">Featured Vegetables</h2><p className="section-sub">Fresh picks from our farmers today</p></div>
+          <button className="nav-btn" style={{ border: "1.5px solid var(--green-700)", color: "var(--green-700)" }} onClick={() => setPage("shop")}>View All →</button>
+        </div>
+        <div className="product-grid">
+          {featured.map(p => <ProductCard key={p.id} product={p} addToCart={addToCart} currentUser={currentUser} setPage={() => {}} />)}
+        </div>
+      </div>
+      <div style={{ background: "var(--green-900)", padding: "3rem 2rem", color: "#fff", textAlign: "center" }}>
+        <h2 style={{ fontSize: "2rem", marginBottom: "0.75rem", fontFamily: "Playfair Display, serif" }}>Are you a Farmer?</h2>
+        <p style={{ opacity: 0.7, marginBottom: "1.5rem" }}>Register, get verified, and start selling your produce directly to thousands of consumers.</p>
+        <button className="hero-btn primary" onClick={() => setPage("auth")}>Register as Farmer</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── PRODUCT CARD ─────────────────────────────────────────────────────────────
+function ProductCard({ product, addToCart, currentUser, setPage }) {
+  return (
+    <div className="product-card">
+      <div className="product-img">{product.emoji}</div>
+      <div className="product-body">
+        {product.organic && <div className="badge-organic">🌿 Organic</div>}
+        <div className="product-name">{product.name}</div>
+        <div className="product-farmer">🧑‍🌾 {product.farmerName}</div>
+        <div className="product-meta">
+          <div>
+            <div className="product-price">₹{product.price}/{product.unit}</div>
+            <div className="product-stock">{product.stock > 0 ? `${product.stock} ${product.unit} available` : "Out of stock"}</div>
+          </div>
+          <button className="add-btn" disabled={product.stock === 0}
+            onClick={() => { if (!currentUser) { alert("Please login as Consumer to buy!"); return; } addToCart(product); }}>
+            {product.stock === 0 ? "Sold Out" : "Add"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── AUTH PAGE ───────────────────────────────────────────────────────────────
+function AuthPage({ users, setUsers, login, setPage }) {
+  const [mode, setMode] = useState("login"); // login | register
+  const [role, setRole] = useState("consumer");
+  const [form, setForm] = useState({ name: "", email: "", password: "", location: "" });
+  const [error, setError] = useState("");
+
+  const handleLogin = () => {
+    const user = users.find(u => u.email === form.email && u.password === form.password);
+    if (!user) { setError("Invalid email or password."); return; }
+    login(user);
+    setPage(user.role === "admin" ? "admin" : user.role === "farmer" ? "farmer" : "shop");
+  };
+
+  const handleRegister = () => {
+    if (!form.name || !form.email || !form.password) { setError("All fields are required."); return; }
+    if (users.find(u => u.email === form.email)) { setError("Email already registered."); return; }
+    const newUser = { id: genId(users), name: form.name, email: form.email, password: form.password, role, verified: role !== "farmer", location: form.location, joinDate: new Date().toISOString().slice(0, 10) };
+    setUsers(u => [...u, newUser]);
+    login(newUser);
+  };
+
+  const demoLogin = (email, password) => {
+    setForm({ ...form, email, password });
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) login(user);
+  };
+
+  return (
+    <div style={{ background: "var(--green-100)", minHeight: "calc(100vh - 64px)", paddingBottom: "3rem" }}>
+      <div className="form-card">
+        <h2 className="form-title">{mode === "login" ? "Welcome Back" : "Join KisanMart"}</h2>
+        <p className="form-sub">{mode === "login" ? "Sign in to your account" : "Create a new account"}</p>
+
+        {mode === "register" && (
+          <div className="role-select">
+            {[["consumer", "🛒", "Consumer"], ["farmer", "🌾", "Farmer"]].map(([r, icon, label]) => (
+              <div key={r} className={`role-opt ${role === r ? "active" : ""}`} onClick={() => setRole(r)}>
+                <span className="role-icon">{icon}</span>{label}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {error && <div className="alert alert-error">⚠️ {error}</div>}
+
+        {mode === "register" && <div className="form-group"><label>Full Name</label><input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Your full name" /></div>}
+        <div className="form-group"><label>Email Address</label><input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" /></div>
+        <div className="form-group"><label>Password</label><input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="••••••••" /></div>
+        {mode === "register" && role === "farmer" && <div className="form-group"><label>Farm Location</label><input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="City, State" /></div>}
+
+        <button className="btn btn-primary" onClick={mode === "login" ? handleLogin : handleRegister}>
+          {mode === "login" ? "Sign In" : "Create Account"}
+        </button>
+        {mode === "login" && role === "farmer" && <p style={{ fontSize: "0.8rem", color: "var(--amber-500)", marginTop: "0.5rem", textAlign: "center" }}>Note: New farmer accounts require admin verification.</p>}
+
+        <div style={{ marginTop: "1.5rem", border: "1px solid var(--border)", borderRadius: 10, padding: "1rem" }}>
+          <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.75rem", fontWeight: 600 }}>Quick Demo Login:</p>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {[["admin@kisanmart.com", "admin123", "Admin"], ["ramu@farm.com", "farmer123", "Farmer"], ["priya@gmail.com", "consumer123", "Consumer"]].map(([e, p, l]) => (
+              <button key={l} onClick={() => demoLogin(e, p)} style={{ padding: "0.3rem 0.75rem", border: "1.5px solid var(--green-300)", borderRadius: 6, background: "none", cursor: "pointer", fontSize: "0.8rem", color: "var(--green-700)" }}>{l}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="toggle-link">
+          {mode === "login" ? <>Don't have an account? <span onClick={() => { setMode("register"); setError(""); }}>Register here</span></> : <>Already have an account? <span onClick={() => { setMode("login"); setError(""); }}>Sign in</span></>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SHOP PAGE ────────────────────────────────────────────────────────────────
+function ShopPage({ products, addToCart, currentUser, setPage }) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [sort, setSort] = useState("default");
+
+  let filtered = products.filter(p =>
+    (category === "All" || p.category === category) &&
+    (p.name.toLowerCase().includes(search.toLowerCase()) || p.farmerName.toLowerCase().includes(search.toLowerCase()))
+  );
+  if (sort === "price-asc") filtered = [...filtered].sort((a, b) => a.price - b.price);
+  if (sort === "price-desc") filtered = [...filtered].sort((a, b) => b.price - a.price);
+  if (sort === "name") filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1>Fresh Vegetables & Fruits</h1>
+        <p>Sourced directly from {[...new Set(products.map(p => p.farmerName))].length} verified farmers</p>
+      </div>
+      <div className="container section">
+        <div className="search-bar">
+          <input className="search-input" placeholder="🔍 Search products or farmers..." value={search} onChange={e => setSearch(e.target.value)} />
+          <select className="filter-select" value={category} onChange={e => setCategory(e.target.value)}>
+            {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+          </select>
+          <select className="filter-select" value={sort} onChange={e => setSort(e.target.value)}>
+            <option value="default">Sort by Default</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="name">Name A-Z</option>
+          </select>
+        </div>
+        {filtered.length === 0 ? (
+          <div className="empty-state"><div className="empty-state-icon">🥕</div><p>No products found.</p></div>
+        ) : (
+          <div className="product-grid">
+            {filtered.map(p => <ProductCard key={p.id} product={p} addToCart={addToCart} currentUser={currentUser} setPage={setPage} />)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── ORDERS PAGE ──────────────────────────────────────────────────────────────
+function OrdersPage({ orders, currentUser, setPage, setOrders }) {
+  const myOrders = currentUser ? orders.filter(o => o.consumerId === currentUser.id) : [];
+  const statusSteps = ["Processing", "Dispatched", "Out for Delivery", "Delivered"];
+
+  return (
+    <div>
+      <div className="page-header"><h1>My Orders</h1><p>Track your purchases from farm to door</p></div>
+      <div className="container section">
+        {myOrders.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">📦</div>
+            <h3>No orders yet</h3>
+            <p>Start shopping to place your first order!</p>
+            <button className="btn btn-primary" style={{ width: "auto", marginTop: "1rem", padding: "0.75rem 2rem" }} onClick={() => setPage("shop")}>Shop Now</button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            {myOrders.slice().reverse().map(order => {
+              const stepIdx = statusSteps.indexOf(order.status);
+              return (
+                <div key={order.id} className="dash-card" style={{ padding: "1.5rem" }}>
+                  <div className="flex-between" style={{ marginBottom: "1rem" }}>
+                    <div>
+                      <span style={{ fontWeight: 700 }}>{order.id}</span>
+                      <span style={{ color: "var(--text-muted)", marginLeft: "0.75rem", fontSize: "0.85rem" }}>📅 {order.date}</span>
+                    </div>
+                    <span className={`status-badge status-${order.status.toLowerCase().replace(/ /g, "-")}`}>{order.status}</span>
+                  </div>
+                  <div style={{ marginBottom: "1rem" }}>
+                    {order.items.map((item, i) => (
+                      <div key={i} style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.25rem" }}>
+                        <span>{item.emoji}</span><span>{item.name}</span><span style={{ color: "var(--text-muted)" }}>x{item.qty}</span>
+                        <span style={{ marginLeft: "auto", fontWeight: 600 }}>₹{item.price * item.qty}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--green-700)", marginBottom: "1rem" }}>Total: ₹{order.total}</div>
+                  <div className="tracking-steps">
+                    {statusSteps.map((s, i) => (
+                      <div key={s} className="track-step">
+                        <div className={`track-dot ${i < stepIdx ? "done" : i === stepIdx ? "active" : ""}`}>
+                          {i < stepIdx ? "✓" : i === stepIdx ? "●" : "○"}
+                        </div>
+                        <div className={`track-label ${i <= stepIdx ? "done" : ""}`}>{s}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── FARMER DASHBOARD ─────────────────────────────────────────────────────────
+function FarmerDashboard({ currentUser, products, setProducts, orders, users, notify }) {
+  const [tab, setTab] = useState("products");
+  const [showModal, setShowModal] = useState(false);
+  const [editProduct, setEditProduct] = useState(null);
+  const [form, setForm] = useState({ name: "", emoji: "🥬", price: "", unit: "kg", stock: "", category: "Vegetables", description: "", organic: false });
+
+  const isVerified = users.find(u => u.id === currentUser?.id)?.verified;
+  const myProducts = products.filter(p => p.farmerId === currentUser?.id);
+  const myOrders = orders.filter(o => o.farmerId === currentUser?.id);
+  const totalRevenue = myOrders.filter(o => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
+
+  const openAdd = () => { setEditProduct(null); setForm({ name: "", emoji: "🥬", price: "", unit: "kg", stock: "", category: "Vegetables", description: "", organic: false }); setShowModal(true); };
+  const openEdit = (p) => { setEditProduct(p); setForm({ name: p.name, emoji: p.emoji, price: p.price, unit: p.unit, stock: p.stock, category: p.category, description: p.description, organic: p.organic }); setShowModal(true); };
+
+  const saveProduct = () => {
+    if (!form.name || !form.price || !form.stock) { alert("Fill all required fields"); return; }
+    if (editProduct) {
+      setProducts(ps => ps.map(p => p.id === editProduct.id ? { ...p, ...form, price: +form.price, stock: +form.stock } : p));
+      notify("✅ Product updated!");
+    } else {
+      setProducts(ps => [...ps, { id: genId(ps), ...form, price: +form.price, stock: +form.stock, farmerId: currentUser.id, farmerName: currentUser.name }]);
+      notify("✅ Product added!");
+    }
+    setShowModal(false);
+  };
+
+  const deleteProduct = (id) => { if (confirm("Delete this product?")) { setProducts(ps => ps.filter(p => p.id !== id)); notify("🗑 Product deleted."); } };
+
+  const emojis = ["🍅", "🥬", "🥔", "🧅", "🥕", "🥦", "🥭", "🍆", "🌽", "🫑", "🧄", "🥒", "🍋", "🍓", "🍇", "🌿"];
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="flex-between">
+          <div><h1>Farmer Dashboard</h1><p>Welcome back, {currentUser?.name}! {!isVerified && "⚠️ Pending verification"}</p></div>
+          {!isVerified && <span className="status-badge status-unverified">Pending Verification</span>}
+          {isVerified && <span className="status-badge status-verified">✓ Verified Farmer</span>}
+        </div>
+      </div>
+      {!isVerified && <div className="alert alert-error" style={{ margin: "1rem 2rem" }}>⚠️ Your account is pending admin verification. You can add products but they won't be visible until verified.</div>}
+      <div className="container section">
+        <div className="dash-grid">
+          <div className="dash-card"><div className="dash-card-icon">📦</div><div className="dash-card-val">{myProducts.length}</div><div className="dash-card-label">Products Listed</div></div>
+          <div className="dash-card"><div className="dash-card-icon">🛒</div><div className="dash-card-val">{myOrders.length}</div><div className="dash-card-label">Total Orders</div></div>
+          <div className="dash-card"><div className="dash-card-icon">✅</div><div className="dash-card-val">{myOrders.filter(o => o.status === "Delivered").length}</div><div className="dash-card-label">Delivered</div></div>
+          <div className="dash-card"><div className="dash-card-icon">💰</div><div className="dash-card-val">₹{totalRevenue}</div><div className="dash-card-label">Total Revenue</div></div>
+        </div>
+
+        <div className="tabs">
+          {["products", "orders"].map(t => <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>{t === "products" ? "My Products" : "Orders"}</button>)}
+        </div>
+
+        {tab === "products" && (
+          <>
+            <div className="flex-between" style={{ marginBottom: "1.5rem" }}>
+              <h3 style={{ fontSize: "1.2rem" }}>My Products ({myProducts.length})</h3>
+              <button className="btn-sm btn-sm-primary" style={{ padding: "0.6rem 1.2rem", fontSize: "0.9rem" }} onClick={openAdd}>+ Add Product</button>
+            </div>
+            {myProducts.length === 0 ? (
+              <div className="empty-state"><div className="empty-state-icon">🌾</div><p>No products yet. Add your first product!</p></div>
+            ) : (
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {myProducts.map(p => (
+                      <tr key={p.id}>
+                        <td><span style={{ fontSize: "1.3rem", marginRight: "0.5rem" }}>{p.emoji}</span><strong>{p.name}</strong></td>
+                        <td><span className="tag">{p.category}</span></td>
+                        <td>₹{p.price}/{p.unit}</td>
+                        <td style={{ color: p.stock < 10 ? "var(--red-500)" : "inherit" }}>{p.stock} {p.unit}{p.stock < 10 && " ⚠️"}</td>
+                        <td>
+                          <div className="action-bar">
+                            <button className="btn-sm btn-sm-warning" onClick={() => openEdit(p)}>Edit</button>
+                            <button className="btn-sm btn-sm-danger" onClick={() => deleteProduct(p.id)}>Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {tab === "orders" && (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead><tr><th>Order ID</th><th>Consumer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody>
+                {myOrders.length === 0 ? <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)" }}>No orders yet</td></tr> : myOrders.map(o => (
+                  <tr key={o.id}>
+                    <td><strong>{o.id}</strong></td>
+                    <td>{o.consumerName}</td>
+                    <td>{o.items.map(i => `${i.emoji}${i.name}×${i.qty}`).join(", ")}</td>
+                    <td>₹{o.total}</td>
+                    <td>{o.date}</td>
+                    <td><span className={`status-badge status-${o.status.toLowerCase().replace(/ /g, "-")}`}>{o.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <h3 className="modal-title">{editProduct ? "Edit Product" : "Add New Product"}</h3>
+            <div className="form-group"><label>Product Name *</label><input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g., Fresh Tomatoes" /></div>
+            <div className="form-group">
+              <label>Emoji Icon</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                {emojis.map(em => <span key={em} onClick={() => setForm({ ...form, emoji: em })} style={{ cursor: "pointer", fontSize: "1.5rem", padding: "0.2rem", borderRadius: 6, background: form.emoji === em ? "var(--green-100)" : "transparent", border: form.emoji === em ? "2px solid var(--green-500)" : "2px solid transparent" }}>{em}</span>)}
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="form-group"><label>Price (₹) *</label><input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="0" /></div>
+              <div className="form-group"><label>Unit</label><select value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })}><option>kg</option><option>piece</option><option>bunch</option><option>dozen</option></select></div>
+              <div className="form-group"><label>Stock *</label><input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} placeholder="0" /></div>
+              <div className="form-group"><label>Category</label><select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}><option>Vegetables</option><option>Fruits</option><option>Leafy Greens</option></select></div>
+            </div>
+            <div className="form-group"><label>Description</label><textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+            <div className="form-group" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <input type="checkbox" id="organic" checked={form.organic} onChange={e => setForm({ ...form, organic: e.target.checked })} style={{ width: "auto" }} />
+              <label htmlFor="organic" style={{ marginBottom: 0 }}>🌿 Organic Product</label>
+            </div>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="btn-sm btn-sm-primary" style={{ flex: 1, padding: "0.75rem" }} onClick={saveProduct}>{editProduct ? "Save Changes" : "Add Product"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
+function AdminDashboard({ users, setUsers, products, setProducts, orders, setOrders, notify }) {
+  const [tab, setTab] = useState("overview");
+  const farmers = users.filter(u => u.role === "farmer");
+  const consumers = users.filter(u => u.role === "consumer");
+  const pendingFarmers = farmers.filter(f => !f.verified);
+  const totalRevenue = orders.filter(o => o.status === "Delivered").reduce((s, o) => s + o.total, 0);
+
+  const verifyFarmer = (id) => { setUsers(us => us.map(u => u.id === id ? { ...u, verified: true } : u)); notify("✅ Farmer verified!"); };
+  const rejectFarmer = (id) => { if (confirm("Reject & remove this farmer?")) { setUsers(us => us.filter(u => u.id !== id)); notify("🗑 Farmer removed."); } };
+  const deleteProduct = (id) => { if (confirm("Delete this product?")) { setProducts(ps => ps.filter(p => p.id !== id)); notify("🗑 Product deleted."); } };
+  const updateOrderStatus = (id, status) => { setOrders(os => os.map(o => o.id === id ? { ...o, status } : o)); notify(`📦 Order status updated to ${status}`); };
+
+  return (
+    <div>
+      <div className="page-header"><h1>Admin Dashboard</h1><p>Manage the entire KisanMart platform</p></div>
+      <div className="container section">
+        <div className="dash-grid">
+          <div className="dash-card"><div className="dash-card-icon">🌾</div><div className="dash-card-val">{farmers.length}</div><div className="dash-card-label">Total Farmers</div></div>
+          <div className="dash-card"><div className="dash-card-icon">⏳</div><div className="dash-card-val" style={{ color: "var(--amber-500)" }}>{pendingFarmers.length}</div><div className="dash-card-label">Pending Verification</div></div>
+          <div className="dash-card"><div className="dash-card-icon">👥</div><div className="dash-card-val">{consumers.length}</div><div className="dash-card-label">Consumers</div></div>
+          <div className="dash-card"><div className="dash-card-icon">📦</div><div className="dash-card-val">{products.length}</div><div className="dash-card-label">Products</div></div>
+          <div className="dash-card"><div className="dash-card-icon">🛒</div><div className="dash-card-val">{orders.length}</div><div className="dash-card-label">Orders</div></div>
+          <div className="dash-card"><div className="dash-card-icon">💰</div><div className="dash-card-val">₹{totalRevenue}</div><div className="dash-card-label">Platform Revenue</div></div>
+        </div>
+
+        <div className="tabs">
+          {[["overview", "Verify Farmers"], ["users", "All Users"], ["products", "Products"], ["orders", "Orders"]].map(([k, v]) => (
+            <button key={k} className={`tab ${tab === k ? "active" : ""}`} onClick={() => setTab(k)}>{v}{k === "overview" && pendingFarmers.length > 0 && <span className="cart-badge" style={{ position: "static", marginLeft: "0.4rem", background: "var(--amber-500)" }}>{pendingFarmers.length}</span>}</button>
+          ))}
+        </div>
+
+        {tab === "overview" && (
+          <>
+            <h3 style={{ marginBottom: "1rem" }}>Pending Farmer Verification ({pendingFarmers.length})</h3>
+            {pendingFarmers.length === 0 ? (
+              <div className="empty-state"><div className="empty-state-icon">✅</div><p>All farmers verified!</p></div>
+            ) : (
+              <div className="table-wrap">
+                <table className="data-table">
+                  <thead><tr><th>Name</th><th>Email</th><th>Location</th><th>Joined</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {pendingFarmers.map(f => (
+                      <tr key={f.id}>
+                        <td><strong>{f.name}</strong></td>
+                        <td>{f.email}</td>
+                        <td>{f.location || "—"}</td>
+                        <td>{f.joinDate}</td>
+                        <td><div className="action-bar">
+                          <button className="btn-sm btn-sm-primary" onClick={() => verifyFarmer(f.id)}>Verify ✓</button>
+                          <button className="btn-sm btn-sm-danger" onClick={() => rejectFarmer(f.id)}>Reject</button>
+                        </div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+
+        {tab === "users" && (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.id}>
+                    <td><strong>{u.name}</strong></td>
+                    <td>{u.email}</td>
+                    <td><span className="chip">{u.role}</span></td>
+                    <td><span className={`status-badge ${u.verified ? "status-verified" : "status-unverified"}`}>{u.verified ? "Verified" : "Pending"}</span></td>
+                    <td>{u.joinDate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {tab === "products" && (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead><tr><th>Product</th><th>Farmer</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+              <tbody>
+                {products.map(p => (
+                  <tr key={p.id}>
+                    <td><span style={{ fontSize: "1.2rem", marginRight: "0.5rem" }}>{p.emoji}</span><strong>{p.name}</strong></td>
+                    <td>{p.farmerName}</td>
+                    <td>₹{p.price}/{p.unit}</td>
+                    <td>{p.stock}</td>
+                    <td><button className="btn-sm btn-sm-danger" onClick={() => deleteProduct(p.id)}>Remove</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {tab === "orders" && (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead><tr><th>Order ID</th><th>Consumer</th><th>Total</th><th>Date</th><th>Status</th><th>Update</th></tr></thead>
+              <tbody>
+                {orders.map(o => (
+                  <tr key={o.id}>
+                    <td><strong>{o.id}</strong></td>
+                    <td>{o.consumerName}</td>
+                    <td>₹{o.total}</td>
+                    <td>{o.date}</td>
+                    <td><span className={`status-badge status-${o.status.toLowerCase().replace(/ /g, "-")}`}>{o.status}</span></td>
+                    <td>
+                      <select style={{ padding: "0.3rem 0.5rem", fontSize: "0.8rem", border: "1px solid var(--border)", borderRadius: 6 }} value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}>
+                        {["Processing", "Dispatched", "Out for Delivery", "Delivered"].map(s => <option key={s}>{s}</option>)}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── CART SIDEBAR ─────────────────────────────────────────────────────────────
+function CartSidebar({ open, setOpen, cart, updateQty, removeItem, cartTotal, placeOrder }) {
+  return (
+    <>
+      <div className={`cart-overlay ${open ? "open" : ""}`} onClick={() => setOpen(false)} />
+      <div className={`cart-sidebar ${open ? "open" : ""}`}>
+        <div className="cart-header">
+          <h3 style={{ fontFamily: "Playfair Display, serif", fontSize: "1.4rem" }}>🛒 Your Cart</h3>
+          <button style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer" }} onClick={() => setOpen(false)}>✕</button>
+        </div>
+        <div className="cart-items">
+          {cart.length === 0 ? (
+            <div className="empty-state"><div className="empty-state-icon">🛒</div><p>Your cart is empty</p></div>
+          ) : (
+            cart.map(item => (
+              <div key={item.id} className="cart-item">
+                <div className="cart-item-emoji">{item.emoji}</div>
+                <div className="cart-item-info">
+                  <div className="cart-item-name">{item.name}</div>
+                  <div className="cart-item-price">₹{item.price * item.qty}</div>
+                  <div className="qty-ctrl">
+                    <button className="qty-btn" onClick={() => updateQty(item.id, -1)}>−</button>
+                    <span className="qty-val">{item.qty}</span>
+                    <button className="qty-btn" onClick={() => updateQty(item.id, 1)}>+</button>
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>@ ₹{item.price}/{item.unit}</span>
+                  </div>
+                </div>
+                <button className="remove-btn" onClick={() => removeItem(item.id)}>🗑</button>
+              </div>
+            ))
+          )}
+        </div>
+        {cart.length > 0 && (
+          <div className="cart-footer">
+            <div className="cart-total"><span>Total</span><span>₹{cartTotal}</span></div>
+            <button className="checkout-btn" onClick={placeOrder}>Place Order — ₹{cartTotal}</button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ─── PROFILE PAGE ─────────────────────────────────────────────────────────────
+function ProfilePage({ currentUser, logout, setPage, orders }) {
+  const myOrders = orders.filter(o => o.consumerId === currentUser?.id);
+  return (
+    <div>
+      <div className="page-header"><h1>My Profile</h1><p>Manage your account</p></div>
+      <div className="container section">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
+          <div className="dash-card">
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1.5rem" }}>
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--green-500)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.8rem", fontWeight: 700, color: "#fff" }}>{currentUser?.name[0]}</div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: "1.2rem" }}>{currentUser?.name}</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>{currentUser?.email}</div>
+                <span className="chip">{currentUser?.role}</span>
+              </div>
+            </div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+              <div>📅 Joined: {currentUser?.joinDate}</div>
+              {currentUser?.location && <div>📍 {currentUser?.location}</div>}
+            </div>
+          </div>
+          {currentUser?.role === "consumer" && (
+            <div className="dash-card">
+              <h3 style={{ marginBottom: "1rem" }}>Order Summary</h3>
+              <div><span className="dash-card-val">{myOrders.length}</span><div className="dash-card-label">Total Orders</div></div>
+              <div style={{ marginTop: "0.75rem" }}><span className="dash-card-val">₹{myOrders.reduce((s, o) => s + o.total, 0)}</span><div className="dash-card-label">Total Spent</div></div>
+              <button className="btn btn-outline" style={{ marginTop: "1rem" }} onClick={() => setPage("orders")}>View Orders</button>
+            </div>
+          )}
+        </div>
+        <button className="btn btn-primary" style={{ width: "auto", marginTop: "2rem", padding: "0.75rem 2rem", background: "var(--red-500)" }} onClick={logout}>Logout</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
